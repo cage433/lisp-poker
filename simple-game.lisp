@@ -26,6 +26,22 @@
 		(let ((stderrs (mapcar (lambda (v) (sqrt (/ v n))) variances)))
 		  (list means stderrs))))))
 
+(defun minimise-random-function (low high fn tol)
+  (labels ((drop-worst (points)
+			 (if (< (cdr (first points)) (cdr (last points)))
+				 (butlast points)
+				 (cdr points)))
+		   (improve (points)
+			 (if (or (< (- (last x-s) (car x-s)) tol)
+					 (< (- (last y-s) (car y-s)) tol))
+				 (second x-s))
+			 )))
+  )
+(destructuring-bind ((x y )) (list 1 2)
+  (2 1))
+
+
+
 (play-simple-game-n-times 1.0 1.0 0.1 0.9 100000)
 
 (defun mean (sample)
@@ -63,3 +79,17 @@
 					 ((eq :std-err cmd) (sqrt (/ (do-cmd :variance) count))))))
 	  (lambda (cmd) (do-cmd cmd)))))
 
+(let ((mu 0.38197))
+  (defun golden-search-minimization (fn low high tol)
+	(labels ((next-x (vals)
+			   (dbind (x0 x1 x2) (mapcar #'car vals)
+					  (+ (* x1 (- 1 mu))
+						 (* mu (if (< (- x1 x0) (- x2 x1)) x2 x1)))))
+			 (drop (vals)
+			   (if (< (cdr (first vals))
+					  (cdr (last vals)))
+				   (butlast vals)
+				   (cdr vals)))
+			 (improve (vals)
+			   )
+			 ))))
