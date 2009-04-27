@@ -1,3 +1,4 @@
+(clc:clc-require :gsll)
 (defmacro dbind (&rest args)
   "Abbreviation for 'destructuring-bind'"
   `(destructuring-bind ,@args))

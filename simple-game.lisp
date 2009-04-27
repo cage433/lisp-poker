@@ -1,5 +1,42 @@
-(defun play-simple-game (lhs-blind lhs-limit rhs-blind rhs-limit bet)
-  (let ((card1 (random 1.0)))
+
+(defun 0-to (n) (map-n-times #'identity n))
+
+(defun play-one-round-games (blind rules N-games)
+  (let* ((N-players (length rules))
+		 (stacks (make-array N-players :element-type 'double-float :initial-element 0d0))
+		 (sum-bets 0.0))
+	(labels ((move-to-pot (i-player amt)
+			   (decf (aref stacks i-player) amt)
+			   (incf sum-bets amt)))
+	  (dotimes (i-game N-games)
+		(let ((highest-card -1.0)
+			  (i-winner)
+			  (num-bets 0))
+		  (mapc (lambda (i-player rule)
+				  (move-to-pot i-player blind)
+				  (let ((card (random 1.0)))
+					(when (> card (aref rule num-bets))
+					  (incf num-bets)
+					  (move-to-pot i-player 1.0)
+					  (when (> card highest-card)
+						(setq highest-card card)
+						(setq i-winner i-player)))))
+				(0-to N-players) rules)
+		  (move-to-pot (or i-winner (1- N-players)) (- sum-bets)))))
+	(map 'vector (lambda (w) (/ w N-games)) stacks)))
+
+(defun initialise-rules (limit N-players)
+  (mapcar (lambda (i-player) (make-array (1+ i-player) :initial-element limit :element-type 'double-float))
+		  (0-to N-players)))
+
+(defun )
+
+(time (play-one-round-games 1.0 (make-list 10 :initial-element 0.9) 100000))
+
+
+(defun play-simple-game (lhs-blind lhs-limit rhs-blind rhs-limit)
+  (let ((card1 (random 1.0))
+		(bet 1.0))
 	(if (< card1 lhs-limit)
 		;; No bet - player 1 folds
 		(list (- lhs-blind) lhs-blind)
@@ -13,32 +50,57 @@
 				  (list (+ rhs-blind bet) (- 0 rhs-blind bet))
 				  ;; player 2 wins
 				  (list (- 0 lhs-blind bet) (+ lhs-blind bet))))))))
-(defun play-simple-game-n-times (blind bet lhs-limit rhs-limit n)
-  (let ((sums (list 0 0))
-		(sumsqrs (list 0 0)))
-	(dotimes (i n)
-	  (let ((result (play-simple-game blind lhs-limit blind rhs-limit bet)))
-		(setq sums (mapcar #'+ sums result))
-		(setq sumsqrs (mapcar #'+ sumsqrs (mapcar #'* result result)))))
-	(let ((means (mapcar (lambda (s) (/ s n)) sums))
-		  (meansqrs (mapcar (lambda (s) (/ s n)) sumsqrs)))
-	  (let ((variances (mapcar #'- meansqrs (mapcar #'* means means))))
-		(let ((stderrs (mapcar (lambda (v) (sqrt (/ v n))) variances)))
-		  (list means stderrs))))))
 
-(defun minimise-random-function (low high fn tol)
-  (labels ((drop-worst (points)
-			 (if (< (cdr (first points)) (cdr (last points)))
-				 (butlast points)
-				 (cdr points)))
-		   (improve (points)
-			 (if (or (< (- (last x-s) (car x-s)) tol)
-					 (< (- (last y-s) (car y-s)) tol))
-				 (second x-s))
-			 )))
-  )
-(destructuring-bind ((x y )) (list 1 2)
-  (2 1))
+(defun play-n-times (game-fn n)
+  (labels ((divide-by (lst a) (mapcar (lambda (x) (/ x a)) lst))
+		   (averages (lst) (divide-by lst n))
+		   (square (lst) (mapcar #'* lst lst)))
+	(do* ((i 0 (1+ i))
+		  (result (funcall game-fn) (funcall game-fn))
+		  (sums result (mapcar #'+ sums result))
+		  (sum-sqrs (square result) (mapcar #'+ sum-sqrs (square result))))
+		 ((= i n) (let* ((means (averages sums))
+						 (variances (mapcar #'- (averages sum-sqrs) (square means))))
+					(values means (divide-by (mapcar #'sqrt variances) (sqrt n)))))
+	  ())))
+
+
+
+
+
+
+
+
+(defun golden-search-minimization (low high fn tol)
+  (let ((mu 0.3897))
+	(labels ((next-pt (x0 x1)
+			   (+ x0 (* mu (- x1 x0))))
+			 (recurse (x-s y-s)
+			   (dbind ((x-near x-mid x-far) (y-near y-mid y-far) )
+					  (list x-s y-s)
+					  (if (< (abs (- x-near x-far)) tol)
+						  (list x-mid (second y-s))
+						  (let* ((x-next (next-pt x-mid x-far))
+								 (y-next (funcall fn x-next)))
+							(if (> y-next y-mid)
+								(recurse (list x-next x-mid x-near) (list y-next y-mid y-near))
+								(recurse (list x-mid x-next x-far) (list y-mid y-next y-far)))
+							)))))
+	  (let* ((x-s (list low (next-pt low high) high))
+			 (y-s (mapcar fn x-s)))
+		(recurse x-s y-s)))))
+
+
+(defun optimise-betting-limits-for-simple-game ()
+  (let ((player1-blind 1.0)
+		(player2-blind 1.0))
+	(labels ((make-game-fn (player1-limit player2-limit)
+			   (lambda () (play-simple-game player1-blind player1-limit player2-blind player2-limit))))
+	  )
+	))
+
+
+
 
 
 
