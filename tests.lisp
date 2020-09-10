@@ -1,4 +1,4 @@
-
+(in-package :cage433-lisp-poker)
 (defparameter *running-flush-king-high* (make-hand-from-cards (list "KH" "QH" "JH" "10H" "9H" "AC" "AD")))
 (defparameter *running-flush-ace-high* (make-hand-from-cards (list "KH" "QH" "JH" "10H" "9H" "AH" "AD")))
 (defparameter *running-flush-five-high* (make-hand-from-cards (list "5H" "4H" "3H" "2H" "AH" "AC" "AD")))

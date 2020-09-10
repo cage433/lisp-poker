@@ -1,7 +1,4 @@
-(clc:clc-require :gsll)
-(defmacro dbind (&rest args)
-  "Abbreviation for 'destructuring-bind'"
-  `(destructuring-bind ,@args))
+(in-package :cage433-lisp-poker)
 
 (defmacro mvbind (&rest args)
   "Abbreviation for 'multiple-value-bind'"
@@ -24,18 +21,6 @@ a variable called 'it'"
 		(if ,sym
 			(let ((it ,sym)) (declare (ignorable it)) ,@(cdr cl1))
 			(acond ,@(cdr clauses)))))))
-
-(defmacro aif (test-form then-form &optional else-form)
-  "Anaphoric if, from Paul Graham's 'On Lisp'. The result of any succesful test is put into
-a variable called 'it'"
-  `(let ((it ,test-form))
-	(if it ,then-form ,else-form)))
-
-(defmacro awhen (test-form then-form)
-  "Anaphoric when, from Paul Graham's 'On Lisp'. The result of any succesful test is put into
-a variable called 'it'"
-  `(let ((it ,test-form))
-	(when it ,then-form)))
 
 
 (defparameter *HAND-TYPES* (vector :running-flush :four-of-a-kind :full-house :flush
@@ -302,13 +287,6 @@ of 'card-name-to-number"
 (defvar *test-name* nil)
 
 
-(defmacro deftest (name parameters &body body)
-  "Define a test function. Within a test function we can call
-   other test functions or use `check' to run individual test
-   cases."
-  `(defun ,name ,parameters
-    (let ((*test-name* (append *test-name* (list ',name))))
-      ,@body)))
 
 (defun check-approximately-equals (value expected-value tolerance &key text (double-format "~,3f"))
   (or (< (abs (- value expected-value)) tolerance)
@@ -324,28 +302,13 @@ of 'card-name-to-number"
   (check-approximately-equals value expected-value
 							  (* tolerance (max (abs value) (abs expected-value)))
 							  :text text :double-format double-format))
-(defmacro with-gensyms (syms &body body)
-  "From Paul Graham's 'On Lisp'"
-  `(let ,(mapcar #'(lambda (s)
-                     `(,s (gensym)))
-                 syms)
-     ,@body))
-(defmacro combine-results (&body forms)
-  "Combine the results (as booleans) of evaluating `forms' in order."
-  (with-gensyms (result)
-	`(let ((,result t))
-	  ,@(loop for f in forms collect `(unless ,f (setf ,result nil)))
-	  ,result)))
+
 (defun report-result (result form)
   "Report the results of a single test case. Called by `check'."
   (unless result
 ;; 	  (format t "... passed: ~a~%" *test-name*)
 	  (format t "... failed: ~a ~a~%" *test-name* form))
   result)
-(defmacro check (&body forms)
-  "Run each expression in `forms' as a test case."
-  `(combine-results
-    ,@(loop for f in forms collect `(report-result ,f ',f))))
 
 
 
