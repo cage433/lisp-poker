@@ -9,6 +9,7 @@
     (and
       (cage433-ci:load-and-compile-if-necessary "package")
       (cage433-ci:load-and-compile-if-necessary "cards")
+      (cage433-ci:load-and-compile-if-necessary "test-cards")
       (cage433-ci:load-and-compile-if-necessary "tests")
       ))
 
@@ -17,7 +18,7 @@
     (if (load-and-compile-source)
 
       (and
-        t
+        (test-hand-analysis)
         )))
 
 (in-package :common-lisp-user)
