@@ -283,12 +283,12 @@ of 'card-name-to-number"
 							  (* tolerance (max (abs value) (abs expected-value)))
 							  :text text :double-format double-format))
 
-(defun report-result (result form)
-  "Report the results of a single test case. Called by `check'."
-  (unless result
-;; 	  (format t "... passed: ~a~%" *test-name*)
-	  (format t "... failed: ~a ~a~%" *test-name* form))
-  result)
+;(defun report-result (result form)
+  ;"Report the results of a single test case. Called by `check'."
+  ;(unless result
+;;; 	  (format t "... passed: ~a~%" *test-name*)
+		;(format t "... failed: ~a ~a~%" *test-name* form))
+  ;result)
 
 
 
@@ -319,7 +319,7 @@ of 'card-name-to-number"
   (apply #'logior (mapcar (lambda (card) (ash 1 (card-name-to-rank card)))
 						  cards)))
 
-(check
+(and
   (equal (list *running-flush* 11) (analyse-hand *running-flush-king-high*))
   (equal (list *running-flush* 12) (analyse-hand *running-flush-ace-high*))
   (equal (list *running-flush* 3) (analyse-hand *running-flush-five-high*))
