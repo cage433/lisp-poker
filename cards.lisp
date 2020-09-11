@@ -1,28 +1,5 @@
 (in-package :cage433-lisp-poker)
 
-(defmacro mvbind (&rest args)
-  "Abbreviation for 'multiple-value-bind'"
-  `(multiple-value-bind ,@args))
-
-(defun fold-left (fn lst x0)
-  "If lst is (l0 l1 ... ln) returns (fn ln (fn ...(fn l1 (fn l0 x0))...))"
-  (if (null lst)
-	  x0
-	  (fold-left fn (cdr lst) (funcall fn (car lst) x0))))
-
-(defmacro acond (&rest clauses)
-  "Anaphoric cond, from Paul Graham's 'On Lisp'. The result of any succesful test is put into
-a variable called 'it'"
-  (if (null clauses)
-	nil
-	(let ((cl1 (car clauses))
-		  (sym (gensym)))
-	  `(let ((,sym ,(car cl1)))
-		(if ,sym
-			(let ((it ,sym)) (declare (ignorable it)) ,@(cdr cl1))
-			(acond ,@(cdr clauses)))))))
-
-
 (defparameter *HAND-TYPES* (vector :running-flush :four-of-a-kind :full-house :flush
 								   :run :three-of-a-kind :two-pair :pair :high-card))
 (defparameter *SUIT-NAMES* (vector "H" "C" "D" "S"))
@@ -72,6 +49,7 @@ a variable called 'it'"
 		(unless (= i index)
 		  (rotatef (svref cards i) (svref cards index))))))
 	cards)
+
 (defun make-dealer (&key (random-state *random-state*) (cards (copy-seq *PACK*)))
   (labels ((shuffle () (shuffle-deck cards random-state)))
 	(let ((next-card-no 0))
@@ -178,10 +156,12 @@ of 'card-name-to-number"
 		(list *full-house* trip-rank it)))))
 
 (defun get-kickers (hand n ranks-to-ignore)
-  (top-bits (fold-left (lambda (rank bitmap) (logxor (ash 1 rank) bitmap))
+  (top-bits (foldl (lambda (bitmap rank) (logxor (ash 1 rank) bitmap))
+					   (net-rank-bitmap hand)
 					   ranks-to-ignore
-					   (net-rank-bitmap hand))
+					   )
 			n))
+
 (defun three-of-a-kind (hand)
   (awhen (has-n-of-same-rank hand 3)
 	(list *three-of-a-kind* it)))
