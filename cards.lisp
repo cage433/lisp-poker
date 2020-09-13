@@ -1,5 +1,6 @@
 (in-package :cage433-lisp-poker)
 
+
 (defparameter *HAND-TYPES* (vector :running-flush :four-of-a-kind :full-house :flush
 								   :run :three-of-a-kind :two-pair :pair :high-card))
 (defparameter *SUIT-NAMES* (vector "H" "C" "D" "S"))
@@ -49,7 +50,6 @@
 		(unless (= i index)
 		  (rotatef (svref cards i) (svref cards index))))))
 	cards)
-
 (defun make-dealer (&key (random-state *random-state*) (cards (copy-seq *PACK*)))
   (labels ((shuffle () (shuffle-deck cards random-state)))
 	(let ((next-card-no 0))
@@ -161,7 +161,6 @@ of 'card-name-to-number"
 					   ranks-to-ignore
 					   )
 			n))
-
 (defun three-of-a-kind (hand)
   (awhen (has-n-of-same-rank hand 3)
 	(list *three-of-a-kind* it)))
@@ -283,22 +282,15 @@ of 'card-name-to-number"
 							  (* tolerance (max (abs value) (abs expected-value)))
 							  :text text :double-format double-format))
 
-;(defun report-result (result form)
-  ;"Report the results of a single test case. Called by `check'."
-  ;(unless result
-;;; 	  (format t "... passed: ~a~%" *test-name*)
-		;(format t "... failed: ~a ~a~%" *test-name* form))
-  ;result)
+(defun report-result (result form)
+  "Report the results of a single test case. Called by `check'."
+  (unless result
+;; 	  (format t "... passed: ~a~%" *test-name*)
+	  (format t "... failed: ~a ~a~%" *test-name* form))
+  result)
 
 
 
-(defparameter *running-flush-king-high* (make-hand-from-cards (list "KH" "QH" "JH" "10H" "9H" "AC" "AD")))
-(defparameter *running-flush-ace-high* (make-hand-from-cards (list "KH" "QH" "JH" "10H" "9H" "AH" "AD")))
-(defparameter *running-flush-five-high* (make-hand-from-cards (list "5H" "4H" "3H" "2H" "AH" "AC" "AD")))
-(defparameter *four-aces* (make-hand-from-cards (list "3S" "3C" "3D" "AH" "AC" "AS" "AD")))
-(defparameter *four-threes* (make-hand-from-cards (list "3S" "3C" "3D" "3H" "AC" "AS" "AD")))
-(defparameter *full-house-threes-on-tens* (make-hand-from-cards (list "3S" "3C" "3D"  "10C" "10S" "AD" "KD")))
-(defparameter *full-house-tens-on-threes* (make-hand-from-cards (list "3S" "3C" "10H"  "10C" "10S" "AD" "KD")))
 (defparameter *flush-Q-high-1* (make-hand-from-cards (list "QH" "JH" "8H" "7H" "6H" "10C" "9C")))
 (defparameter *flush-Q-high-2* (make-hand-from-cards (list "QH" "JH" "9H" "7H" "6H" "10C" "9C")))
 (defparameter *run-Q-high* (make-hand-from-cards (list "QH" "JH" "10C" "9H" "8H" "10D" "10S")))
@@ -320,13 +312,6 @@ of 'card-name-to-number"
 						  cards)))
 
 (and
-  (equal (list *running-flush* 11) (analyse-hand *running-flush-king-high*))
-  (equal (list *running-flush* 12) (analyse-hand *running-flush-ace-high*))
-  (equal (list *running-flush* 3) (analyse-hand *running-flush-five-high*))
-  (equal (list *four-of-a-kind* 12) (analyse-hand *four-aces*))
-  (equal (list *four-of-a-kind* 1) (analyse-hand *four-threes*))
-  (equal (list *full-house* 8 1) (analyse-hand *full-house-tens-on-threes*))
-  (equal (list *full-house* 1 8) (analyse-hand *full-house-threes-on-tens*))
   (equal (list *flush* (card-names-to-bitmap (list "QH" "JH" "8H" "7H" "6H"))) (analyse-hand *flush-Q-high-1*))
   (equal (list *flush* (card-names-to-bitmap (list "QH" "JH" "9H" "7H" "6H"))) (analyse-hand *flush-Q-high-2*))
   (equal (list *run* 10) (analyse-hand *run-Q-high*))
