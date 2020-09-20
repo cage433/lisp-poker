@@ -17,9 +17,9 @@
   (declare #+sbcl(sb-ext:muffle-conditions style-warning))
     (if (load-and-compile-source)
 
-      (and
-        (test-hand-analysis)
-        )))
+      (run-tests (info "poker-tests"
+          (hand-analysis-suite)))
+        ))
 
 (in-package :common-lisp-user)
 (defun ci()

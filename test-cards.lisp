@@ -1,7 +1,7 @@
 (in-package :cage433-lisp-poker)
 
 (defparameter *running-flush-king-high* (make-hand-from-cards (list "KH" "QH" "JH" "10H" "9H" "AC" "AD")))
-(defun test-hand-analysis ()
+(defun hand-analysis-suite ()
   (labels ((check-hand (cards expected-analysis)
             (let ((analysis (analyse-hand (make-hand-from-cards cards))))
               (equal analysis expected-analysis))))
