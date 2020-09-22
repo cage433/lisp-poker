@@ -9,8 +9,8 @@
     (and
       (cage433-ci:load-and-compile-if-necessary "package")
       (cage433-ci:load-and-compile-if-necessary "cards")
-      (cage433-ci:load-and-compile-if-necessary "test-cards")
-      (cage433-ci:load-and-compile-if-necessary "tests")
+      (cage433-ci:load-and-compile-if-necessary "tests/test-cards")
+      ;(cage433-ci:load-and-compile-if-necessary "tests")
       ))
 
 (defun compile-and-run-tests()
