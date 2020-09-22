@@ -9,8 +9,8 @@
     (and
       (cage433-ci:load-and-compile-if-necessary "package")
       (cage433-ci:load-and-compile-if-necessary "cards")
+      (cage433-ci:load-and-compile-if-necessary "tests/generators")
       (cage433-ci:load-and-compile-if-necessary "tests/test-cards")
-      ;(cage433-ci:load-and-compile-if-necessary "tests")
       ))
 
 (defun compile-and-run-tests()
@@ -18,7 +18,10 @@
     (if (load-and-compile-source)
 
       (run-tests (info "poker-tests"
-          (hand-analysis-suite)))
+          (hand-analysis-suite)
+          (generator-test-suite)  
+          (running-flush-generator-suite)  
+          ))
         ))
 
 (in-package :common-lisp-user)

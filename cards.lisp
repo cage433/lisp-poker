@@ -100,7 +100,7 @@ of 'card-name-to-number"
               (logior (ash 1 (rank-index card))
                       (nth (suit-index card) suited-rank-bitmaps)))
 		(incf (aref rank-counts (rank-index card))))
-	  (list suited-rank-bitmaps rank-counts (apply #'logior suited-rank-bitmaps)))))
+	  (list suited-rank-bitmaps rank-counts (apply #'logior suited-rank-bitmaps) cards))))
 
 (defun suited-rank-bitmaps (hand)
   (first hand))
@@ -110,6 +110,8 @@ of 'card-name-to-number"
 (defun net-rank-bitmap (hand)
   (third hand))
 
+(defun hand-cards (hand)
+  (fourth hand))
 (defun top-bits (bitmap n)
   (labels ((rec (bitmap acc)
 			 (if (<= (logcount bitmap) n)
@@ -127,18 +129,22 @@ of 'card-name-to-number"
 (defun run (hand-or-bitmap)
   "If a run exists returns"
   (if (listp hand-or-bitmap)
-	  (run (net-rank-bitmap hand-or-bitmap))
-	  (awhen (position-if (lambda (run-bitmap) (= run-bitmap (logand run-bitmap hand-or-bitmap)))
-					*RUNS-RANK-BITMAPS*)
-		(list *run* (- 12 it)))))
+      (run (net-rank-bitmap hand-or-bitmap))
+      (awhen (position-if (lambda (run-bitmap) (= run-bitmap (logand run-bitmap hand-or-bitmap)))
+                          *RUNS-RANK-BITMAPS*)
+        (list *run* (- 12 it)))))
 
 (defun running-flush (hand)
-  (awhen (flush hand)
-	(let ((flush-bitmap (cadr it)))
-	  (awhen (run flush-bitmap)
-		(list *running-flush* (cadr it))))))
+  (let ((suit-bitmaps (suited-rank-bitmaps hand)))
+    (awhen (position-if 
+             (lambda (suit-bitmap) (>= (logcount suit-bitmap) 5))
+             suit-bitmaps)
+      (let* ((matching-cards (remove-if-not (lambda (card) (equalp (suit-index card) it)) (hand-cards hand) )))
+        (awhen  (run (make-hand-from-cards matching-cards))
+          (list *running-flush* (cadr it)))))))
+   
 
-(defun has-n-of-same-rank (hand n &optional rank-to-ignore)
+(defun has-n-of-same-rank (hand n &key (rank-to-ignore nil))
   "Returns the highest rank for which there exist at least 'n' cards."
   (find-if (lambda (rank) (and (not (eq rank rank-to-ignore))
 							   (>= (aref (rank-counts hand) rank) n)))
@@ -152,15 +158,16 @@ of 'card-name-to-number"
 (defun full-house (hand)
   (awhen (has-n-of-same-rank hand 3)
 	(let ((trip-rank it))
-	  (awhen (has-n-of-same-rank hand 2 trip-rank)
+	  (awhen (has-n-of-same-rank hand 2 :rank-to-ignore trip-rank)
 		(list *full-house* trip-rank it)))))
 
-(defun get-kickers (hand n ranks-to-ignore)
+(defun get-kickers (hand n &key (ranks-to-ignore nil))
   (top-bits (foldl (lambda (bitmap rank) (logxor (ash 1 rank) bitmap))
 					   (net-rank-bitmap hand)
 					   ranks-to-ignore
 					   )
 			n))
+
 (defun three-of-a-kind (hand)
   (awhen (has-n-of-same-rank hand 3)
 	(list *three-of-a-kind* it)))
@@ -168,19 +175,19 @@ of 'card-name-to-number"
 (defun two-pair (hand)
   (awhen (has-n-of-same-rank hand 2)
 	(let ((top-pair-rank it))
-	  (awhen (has-n-of-same-rank hand 2 top-pair-rank)
+	  (awhen (has-n-of-same-rank hand 2 :rank-to-ignore top-pair-rank)
 		(let* ((bottom-pair-rank it)
-			   (kicker (get-kickers hand 1 (list top-pair-rank bottom-pair-rank))))
+			   (kicker (get-kickers hand 1 :ranks-to-ignore (list top-pair-rank bottom-pair-rank))))
 		  (list *two-pair* top-pair-rank bottom-pair-rank kicker))))))
 
 (defun pair (hand)
   (awhen (has-n-of-same-rank hand 2)
 	(let* ((top-pair-rank it)
-		   (kickers (get-kickers hand 3 (list top-pair-rank))))
+		   (kickers (get-kickers hand 3 :ranks-to-ignore (list top-pair-rank))))
 	  (list *pair* top-pair-rank kickers))))
 
 (defun high-card (hand)
-  (list *high-card* (get-kickers hand 5 nil)))
+  (list *high-card* (get-kickers hand 5)))
 
 (defun analyse-hand (hand)
   (or (running-flush hand)
@@ -252,85 +259,5 @@ of 'card-name-to-number"
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;; Build probability table ;;;;;;;;;;;;;;;;;;
-
-
-
-
-
-
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;;;;;;;;;;;;;; tests ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-
-(defvar *test-name* nil)
-
-
-
-(defun check-approximately-equals (value expected-value tolerance &key text (double-format "~,3f"))
-  (or (< (abs (- value expected-value)) tolerance)
-	  (progn
-		(when *test-name*
-		  (format t "Test failed: ~a~%" *test-name*))
-		(when text
-		  (format t "~a~%" text))
-		(format t "Expected ~?, but got ~?~%" double-format (list expected-value) double-format (list value))
-		nil)))
-
-(defun check-within-%age-tolerance (value expected-value tolerance &key text (double-format "~,3f"))
-  (check-approximately-equals value expected-value
-							  (* tolerance (max (abs value) (abs expected-value)))
-							  :text text :double-format double-format))
-
-(defun report-result (result form)
-  "Report the results of a single test case. Called by `check'."
-  (unless result
-;; 	  (format t "... passed: ~a~%" *test-name*)
-	  (format t "... failed: ~a ~a~%" *test-name* form))
-  result)
-
-
-
-(defparameter *flush-Q-high-1* (make-hand-from-cards (list "QH" "JH" "8H" "7H" "6H" "10C" "9C")))
-(defparameter *flush-Q-high-2* (make-hand-from-cards (list "QH" "JH" "9H" "7H" "6H" "10C" "9C")))
-(defparameter *run-Q-high* (make-hand-from-cards (list "QH" "JH" "10C" "9H" "8H" "10D" "10S")))
-(defparameter *run-10-high* (make-hand-from-cards (list  "10C" "9H" "8H" "7H" "6H" "10D" "10S")))
-(defparameter *three-kings* (make-hand-from-cards (list "KH" "KC" "KS" "QS" "10S" "8D" "6D")))
-(defparameter *three-queens* (make-hand-from-cards (list "AC" "QH" "QC" "QS" "10S" "8D" "6D")))
-(defparameter *tens-and-eights* (make-hand-from-cards (list "10C" "10D" "8S" "8D" "4C" "KS" "2S")))
-(defparameter *nines-and-eights* (make-hand-from-cards (list "9C" "9D" "8S" "8D" "AC" "KS" "2S")))
-(defparameter *tens-and-threes* (make-hand-from-cards (list "10C" "10D" "3S" "3D" "AC" "KS" "2S")))
-(defparameter *two-tens* (make-hand-from-cards (list "10C" "10D" "AC" "KS" "8H" "5H" "3D")))
-(defparameter *two-nines-1* (make-hand-from-cards (list "9C" "9D" "AC" "KS" "8H" "5H" "3D")))
-(defparameter *two-nines-2* (make-hand-from-cards (list "9C" "9D" "AC" "QS" "8H" "5H" "3D")))
-(defparameter *king-high-1* (make-hand-from-cards (list "KC" "QC" "10D" "9D" "5S" "4S" "2H")))
-(defparameter *king-high-2* (make-hand-from-cards (list "KC" "QC" "10D" "8D" "5S" "4S" "2H")))
-(defparameter *queen-high* (make-hand-from-cards (list "QC" "10D" "8D" "6S" "5S" "4S" "2H")))
-
-(defun card-names-to-bitmap (cards)
-  (apply #'logior (mapcar (lambda (card) (ash 1 (card-name-to-rank card)))
-						  cards)))
-
-(and
-  (equal (list *flush* (card-names-to-bitmap (list "QH" "JH" "8H" "7H" "6H"))) (analyse-hand *flush-Q-high-1*))
-  (equal (list *flush* (card-names-to-bitmap (list "QH" "JH" "9H" "7H" "6H"))) (analyse-hand *flush-Q-high-2*))
-  (equal (list *run* 10) (analyse-hand *run-Q-high*))
-  (equal (list *run* 8) (analyse-hand *run-10-high*))
-  (equal (list *three-of-a-kind* 11) (analyse-hand *three-kings*))
-  (equal (list *three-of-a-kind* 10) (analyse-hand *three-queens*))
-  (equal (list *two-pair* 8 6 (card-names-to-bitmap (list "KS"))) (analyse-hand *tens-and-eights*))
-  (equal (list *two-pair* 7 6 (card-names-to-bitmap (list "AC"))) (analyse-hand *nines-and-eights*))
-  (equal (list *two-pair* 8 1 (card-names-to-bitmap (list "AC"))) (analyse-hand *tens-and-threes*))
-  (equal (list *pair* 8 (card-names-to-bitmap (list "AC" "KS" "8H"))) (analyse-hand *two-tens*))
-  (equal (list *pair* 7 (card-names-to-bitmap (list "AC" "KS" "8H"))) (analyse-hand *two-nines-1*))
-  (equal (list *pair* 7 (card-names-to-bitmap (list "AC" "QS" "8H"))) (analyse-hand *two-nines-2*))
-  (equal (list *high-card* (card-names-to-bitmap (list "KC" "QC" "10D" "9D" "5S"))) (analyse-hand *king-high-1*))
-  (equal (list *high-card* (card-names-to-bitmap (list "KC" "QC" "10D" "8D" "5S"))) (analyse-hand *king-high-2*))
-  (equal (list *high-card* (card-names-to-bitmap (list "QC" "10D" "8D" "6S" "5S"))) (analyse-hand *queen-high*))
-  
-  )
-
-
-
 
 

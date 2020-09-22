@@ -16,7 +16,13 @@
                               (list *running-flush* 12)))
                 (spec "Five high running flush"
                   (check-hand (list "5H" "4H" "3H" "2H" "AH" "AC" "AD")
-                              (list *running-flush* 3))))
+                              (list *running-flush* 3)))
+
+                (spec "9 high with more of same suit"
+                  (check-hand (list "5C" "6C" "7C" "8C" "9C" "AC" "7S")
+                              (list *running-flush* 7)
+                              )
+                  ))
           (info "four of a kind"  
                 (spec "aces"
                       (check-hand (list "3S" "3C" "3D" "AH" "AC" "AS" "AD")
