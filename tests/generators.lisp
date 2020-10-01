@@ -1,22 +1,17 @@
 (in-package :cage433-lisp-poker)
+
 (defun random-thing (rng things)
   (let ((n (random-state:random-int rng 0 (1- (length things)))))
     (if (vectorp things)
         (aref things n)
         (nth n things))
-    )
-  )
-(defun range (from to)
-  (do ((acc nil (cons i acc))
-       (i from (incf i)))
-      ((>= i to) (reverse acc))))
+    ))
 
-(defun generator-test-suite ()
-  (info "Range"
-        (spec "from 1 until 3"
-              (equalp '(1 2) (range 1 3)))
-        (spec "from 1 until 1"
-              (equalp nil (range 1 1)))))
+(defparameter *PACK*
+  (let ((pack (make-array 52 :element-type 'integer)))
+	(dotimes (n 52)
+	  (setf (aref pack n) n))
+	pack))
 
 (defun choose-random-cards (rng n &key (cards-to-omit nil))
   (do ((next-card (random-thing rng *PACK*) (random-thing rng *PACK*))
@@ -25,7 +20,12 @@
                     (cons next-card acc))))
       ((>= (length acc) n) acc)))
 
-(defparameter *rng* (random-state:make-generator :mersenne-twister-64 12345))
+(defun choose-random-cards-2 (rng n &key (exclude (lambda (card) (declare (ignore card)) nil)))
+  (do ((next-card (random-thing rng *PACK*) (random-thing rng *PACK*))
+       (acc nil (if (funcall exclude next-card)
+                    acc
+                    (cons next-card acc))))
+      ((>= (length acc) n) acc)))
 (defun random-running-flush (rng &key (top-rank nil) (suit_ nil))
   (let* ((top-rank (or top-rank (random-thing rng (nthcdr 4 *RANKS* ))))
          (suit (or suit_ (random-thing rng *SUIT-NAMES*)))
@@ -35,35 +35,4 @@
 
     (append running-flush-cards (choose-random-cards rng 2 :cards-to-omit running-flush-cards))
     ))
-(format t "~A~%" (mapcar #'card-number-to-name  (random-running-flush *rng*))) 
-
-(defun running-flush-generator-suite ()
-  (info "random running flushes"
-        (random-spec "Is a running flush"
-                     (lambda (rng) 
-                       (let* ((cards (random-running-flush rng))
-                              (analysis (analyse-hand (make-hand-from-cards cards))))
-                         (equalp (car analysis) *running-flush*))
-                       )
-                     :num-runs 100
-                     )))
-
-(defun running-flush-generator-test ()
-  (
-        random-spec "Is a running flush"
-                     (lambda (rng) 
-                       (let* ((cards (random-running-flush rng))
-                              (analysis (analyse-hand (make-hand-from-cards cards))))
-                         (progn
-                           (format t "~A~%"
-                           (mapcar #'card-number-to-name cards))
-                           (format t "~A~%" analysis)
-                         (equalp (car analysis) *running-flush*)))
-                       )
-                     :num-runs 100
-                     ))
-(cage433-lisp-utils::run-random-test (running-flush-generator-test)
-
-                     :seed 5995244
-           )
 
