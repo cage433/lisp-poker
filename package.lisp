@@ -2,6 +2,7 @@
 (require :cage433-ci)
 (require :cl-match)
 (require :cage433-lisp-utils)
+(require :array-operations)
 
 (defpackage :cage433-lisp-poker
   (:use :common-lisp)
