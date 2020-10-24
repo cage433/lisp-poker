@@ -21,6 +21,7 @@
       (run-tests (info "poker-tests"
           (hand-analysis-suite)
           (shuffle-test-suite)
+          (hand-frequency-suite)
           ))))
 
 (in-package :common-lisp-user)

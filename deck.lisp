@@ -1,28 +1,7 @@
 (in-package :cage433-lisp-poker)
+(require :cage433-lisp-utils)
 
-(defun new-pack ()
-  (let ((pack (make-array 52 :element-type 'integer)))
-    (dotimes (n 52)
-      (setf (aref pack n) n))
-    pack))
+(defun new-pack (&optional (rng (random-state:make-generator :mersenne-twister-64)))
+  (coerce (shuffle-vector rng (aops:generate* 'integer #'identity 52 :position))
+          'list))
 
-(defun shuffle-deck (rng cards)
-  (let ((no-of-cards (length cards)))
-    (dotimes (i no-of-cards)
-      (let ((index (random-state:random-int rng i (1- no-of-cards))))
-        (unless (= i index)
-          (rotatef (svref cards i) (svref cards index))))))
-  cards)
-
-
-(defun new-deck (&key (cards (new-pack)))
-  (let ((pack cards)
-        (i-next-card 0))
-    (lambda (command &optional arg)
-      (ecase command
-        (:shuffle (shuffle-deck arg pack))
-        (:next 
-         (let ((card (svref cards i-next-card)))
-           (progn (incf i-next-card)
-                  card))
-         )))))
