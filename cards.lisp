@@ -42,37 +42,6 @@ of 'card-name-to-number"
 	   (result '() (cons (funcall fn i) result)))
 	  ((= i N) (reverse result))))
 
-;(defun increment-hole-card-win-count (dealer N-players stats counts)
-  ;(funcall dealer :shuffle)
-  ;(let ((hole-cards (map-n-times (lambda (i) (declare (ignore i)) (funcall dealer 2)) N-players))
-		;(face-cards (funcall dealer 5)))
-	;(let* ((analyses (sort (mapcar (lambda (players-hole-cards)
-									 ;(let ((hand (make-hand-from-cards (append players-hole-cards face-cards))))
-										 ;(list
-										;(analyse-hole-cards players-hole-cards)
-										;(analyse-hand hand)
-										;hand)))
-									 ;hole-cards)
-							 ;#'hand> :key #'second))
-			 ;(winning-analysis (second (car analyses))))
-		;(dolist (a analyses)
-		;(incf (gethash (first a) counts 0)))
-		;(let* ((winners (remove-if-not (lambda (analysis) (eq analysis winning-analysis)) analyses :key #'second))
-			 ;(win-fraction (/ 1.0 (length winners))))
-		;(dolist (winners-hole-cards (mapcar #'first winners))
-			;(incf (gethash winners-hole-cards stats 0.0)
-				;win-fraction))))))
-
-;(defun hole-card-win-stats (N-players N-games)
-  ;(let ((stats (make-hash-table :test #'equal))
-		;(counts (make-hash-table :test #'equal))
-		;(dealer (make-dealer)))
-	;(dotimes (i N-games)
-		;(increment-hole-card-win-count dealer N-players stats counts))
-	;(let ((results '()))
-		;(maphash (lambda (hole-card-type sum-win-fractions) (push (cons hole-card-type (/ sum-win-fractions (gethash hole-card-type counts))) results))
-				 ;stats)
-		;(sort results #'> :key #'cdr))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;; Build probability table ;;;;;;;;;;;;;;;;;;

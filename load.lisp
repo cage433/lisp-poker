@@ -9,8 +9,8 @@
       (cage433-ci:load-and-compile-if-necessary "cards")
       (cage433-ci:load-and-compile-if-necessary "hand-analysis")
       (cage433-ci:load-and-compile-if-necessary "tests/generators")
-      (cage433-ci:load-and-compile-if-necessary "tests/test-hand-analysis")
       (cage433-ci:load-and-compile-if-necessary "deck")
+      (cage433-ci:load-and-compile-if-necessary "tests/test-hand-analysis")
       (cage433-ci:load-and-compile-if-necessary "tests/deck-tests")
       ))
 

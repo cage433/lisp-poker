@@ -20,19 +20,11 @@
                     (cons next-card acc))))
       ((>= (length acc) n) acc)))
 
-(defun choose-random-cards-2 (rng n &key (exclude (lambda (card) (declare (ignore card)) nil)))
-  (do ((next-card (random-thing rng *PACK*) (random-thing rng *PACK*))
-       (acc nil (if (funcall exclude next-card)
-                    acc
-                    (cons next-card acc))))
-      ((>= (length acc) n) acc)))
 (defun random-running-flush (rng &key (top-rank nil) (suit_ nil))
   (let* ((top-rank (or top-rank (random-thing rng (nthcdr 4 *RANKS* ))))
          (suit (or suit_ (random-thing rng *SUIT-NAMES*)))
          (card-names 
            (mapcar (lambda (n) (format nil "~A~A" (aref *RANK-NAMES* n) suit)) (range (- top-rank 4) (+ top-rank 1))))
          (running-flush-cards (mapcar #'card-name-to-number card-names)))
-
-    (append running-flush-cards (choose-random-cards rng 2 :cards-to-omit running-flush-cards))
-    ))
+    (append running-flush-cards (choose-random-cards rng 2 :cards-to-omit running-flush-cards))))
 
