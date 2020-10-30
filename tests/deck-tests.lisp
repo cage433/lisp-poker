@@ -26,22 +26,35 @@
     (< err 3.0)
     ))
 
+(defun hand-frequency-test (name expected-hand-type n-runs expected-freq)
+  (random-spec name
+               (let ((pack (new-pack)))
+                 (lambda (random-state)
+                   (let* ((pred (lambda  ()
+                                  (progn 
+                                    (shuffle-vector random-state pack)
+                                    (let ((cards (make-hand-from-cards (coerce (subseq pack 0 7) 'list))))
+                                      (eq expected-hand-type (car (analyse-hand cards))))
+                                    ))))
+                     (test-frequency pred n-runs expected-freq)
+
+                     )
+                   ))
+               )
+  )
 (defun hand-frequency-suite ()
-  (info "hand frequencies"
-        (random-spec "four of a kind"
-                     (let ((pack (new-pack)))
-                       (lambda (rng)
-                         (declare (ignorable rng))
-                         (let* ((pred (lambda  ()
-                                        (progn 
-                                          (shuffle-vector rng pack)
-                                               (let ((cards (make-hand-from-cards (coerce (subseq pack 0 7) 'list))))
-                                                 (four-of-a-kind cards)
-                                                 )
-                                               ))))
-                             (test-frequency pred 100000 0.00168)
-                           
-                           )
-                         ))
-                     )))
+  "Probabilities taken from 
+    https://en.wikipedia.org/wiki/Poker_probability#Frequency_of_7-card_poker_hands "
+  (let ((n-runs (* 10 1000)))
+    (info "hand frequencies"
+          (hand-frequency-test "running flush" *running-flush* n-runs 0.000311)
+          (hand-frequency-test "four of a kind" *four-of-a-kind* n-runs 0.00168)
+          (hand-frequency-test "full house" *full-house* n-runs 0.026)
+          (hand-frequency-test "flush" *flush* n-runs 0.0303)
+          (hand-frequency-test "straight" *run* n-runs 0.0462)
+          (hand-frequency-test "three of a kind" *three-of-a-kind* n-runs 0.0483)
+          (hand-frequency-test "two pair" *two-pair* n-runs 0.235)
+          (hand-frequency-test "pair" *pair* n-runs 0.438)
+          (hand-frequency-test "high card" *high-card* n-runs 0.174)
+          )))
 
