@@ -1,7 +1,7 @@
 (in-package :cage433-lisp-poker)
 
 (defun random-thing (rng things)
-  (let ((n (random-state:random-int rng 0 (1- (length things)))))
+  (let ((n (random (1- (length things)) rng)))
     (if (vectorp things)
         (aref things n)
         (nth n things))

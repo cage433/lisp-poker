@@ -22,20 +22,26 @@
          (n-success (count-frequency pred n))
          (observed-p (/ n-success n 1.0))
          (err (abs (/ (- observed-p p) std-err))))
-    (format t "~A ~A ~A~%" observed-p err std-err)
+    ;(format t "~A ~A ~A~%" observed-p err std-err)
     (< err 3.0)
     ))
 
 (defun hand-frequency-suite ()
   (info "hand frequencies"
         (random-spec "four of a kind"
-                     (lambda (rng)
-                       (let ((pred (lambda  ()
-                                  (let ((cards (make-hand-from-cards (subseq (new-pack rng) 0 7))))
-                                    (four-of-a-kind cards)
-                                    ))))
-                         (test-frequency pred 1000000 0.00168)
-                         )
-                       )
-              )))
+                     (let ((pack (new-pack)))
+                       (lambda (rng)
+                         (declare (ignorable rng))
+                         (let* ((pred (lambda  ()
+                                        (progn 
+                                          (shuffle-vector rng pack)
+                                               (let ((cards (make-hand-from-cards (coerce (subseq pack 0 7) 'list))))
+                                                 (four-of-a-kind cards)
+                                                 )
+                                               ))))
+                             (test-frequency pred 100000 0.00168)
+                           
+                           )
+                         ))
+                     )))
 
