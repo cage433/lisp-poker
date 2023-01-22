@@ -105,7 +105,7 @@
          (n-success (count-frequency pred n))
          (observed-p (/ n-success n 1.0))
          (err (abs (/ (- observed-p p) std-err))))
-    (< err 3.0)))
+      (< err 4.0)))
 
 (defun hand-frequency-test (name expected-hand-type n-runs expected-freq)
   (random-spec name

@@ -17,8 +17,10 @@
 
 (defun card-name-to-rank (card)
   (position (subseq card 0 (1- (length card))) *RANK-NAMES* :test #'string-equal))
+
 (defun card-name-to-suit-number (card)
   (position (subseq card (1- (length card))) *SUIT-NAMES* :test #'string-equal))
+
 (defun card-name-to-number (card)
   "It is convenient, and fast, to manipulate cards as integers. This function converts a card represented in the format '10H', 
 into <rank-index> + 13 * <suit-index>. This function is the inverse of 'card-number-to-name"
@@ -28,14 +30,10 @@ into <rank-index> + 13 * <suit-index>. This function is the inverse of 'card-num
 			(suit (card-name-to-suit-number card)))
 		(+ (* 13 suit) rank))))
 
-
-
 (defun card-number-to-name (card)
   "Converts a card, represented as an integer, into a string representation, such as '10H'. This is the inverse
 of 'card-name-to-number"
   (format nil "~a~a" (aref *RANK-NAMES* (rank-index card)) (aref *SUIT-NAMES* (suit-index card))))
-
-
 
 (defun map-n-times (fn N)
   (do ((i 0 (1+ i))
@@ -43,7 +41,5 @@ of 'card-name-to-number"
 	  ((= i N) (reverse result))))
 
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;;;;;;;; Build probability table ;;;;;;;;;;;;;;;;;;
 
 

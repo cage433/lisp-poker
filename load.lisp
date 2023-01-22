@@ -10,8 +10,10 @@
       (cage433-ci:load-and-compile-if-necessary "hand-analysis")
       (cage433-ci:load-and-compile-if-necessary "tests/generators")
       (cage433-ci:load-and-compile-if-necessary "deck")
+      (cage433-ci:load-and-compile-if-necessary "game")
       (cage433-ci:load-and-compile-if-necessary "tests/test-hand-analysis")
       (cage433-ci:load-and-compile-if-necessary "tests/deck-tests")
+      (cage433-ci:load-and-compile-if-necessary "tests/game-tests")
       ))
 
 (defun compile-and-run-tests()
@@ -22,6 +24,7 @@
           (hand-analysis-suite)
           (shuffle-test-suite)
           (hand-frequency-suite)
+          (game-test-suite)
           ))))
 
 (in-package :common-lisp-user)

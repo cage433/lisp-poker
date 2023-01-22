@@ -1,4 +1,3 @@
-
 (defun 0-to (n) (map-n-times #'identity n))
 
 (defun play-one-round-games (blind rules N-games)
@@ -29,10 +28,7 @@
   (mapcar (lambda (i-player) (make-array (1+ i-player) :initial-element limit :element-type 'double-float))
 		  (0-to N-players)))
 
-(defun )
-
 (time (play-one-round-games 1.0 (make-list 10 :initial-element 0.9) 100000))
-
 
 (defun play-simple-game (lhs-blind lhs-limit rhs-blind rhs-limit)
   (let ((card1 (random 1.0))
